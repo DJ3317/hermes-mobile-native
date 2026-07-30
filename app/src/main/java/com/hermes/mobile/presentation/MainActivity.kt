@@ -32,6 +32,12 @@ import com.hermes.mobile.presentation.screens.cron.CronScreen
 import com.hermes.mobile.presentation.screens.agents.AgentsScreen
 import com.hermes.mobile.presentation.screens.profiles.ProfilesScreen
 import com.hermes.mobile.presentation.screens.model.ModelConfigScreen
+import com.hermes.mobile.presentation.screens.starmap.StarmapScreen
+import com.hermes.mobile.presentation.screens.projects.ProjectsScreen
+import com.hermes.mobile.presentation.screens.files.FilesScreen
+import com.hermes.mobile.presentation.screens.review.ReviewScreen
+import com.hermes.mobile.presentation.screens.terminal.TerminalScreen
+import com.hermes.mobile.presentation.screens.preview.PreviewScreen
 import com.hermes.mobile.presentation.theme.HermesTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -98,6 +104,12 @@ class MainActivity : ComponentActivity() {
                         composable("agents") { AgentsScreen() }
                         composable("profiles") { ProfilesScreen() }
                         composable("model_config") { ModelConfigScreen() }
+                        composable("starmap") { StarmapScreen() }
+                        composable("projects") { ProjectsScreen() }
+                        composable("files") { FilesScreen() }
+                        composable("review") { ReviewScreen() }
+                        composable("terminal") { TerminalScreen() }
+                        composable("preview") { PreviewScreen() }
                     }
                 }
             }
