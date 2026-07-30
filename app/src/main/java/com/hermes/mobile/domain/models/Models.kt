@@ -18,7 +18,9 @@ object InstantSerializer : KSerializer<Instant> {
 data class Session(
     val id: String,
     val title: String,
+    @Serializable(with = InstantSerializer::class)
     val createdAt: Instant = Instant.now(),
+    @Serializable(with = InstantSerializer::class)
     val updatedAt: Instant = Instant.now(),
     val messageCount: Int = 0,
     val archived: Boolean = false,
@@ -33,6 +35,7 @@ data class Message(
     val sessionId: String,
     val role: MessageRole,
     val content: String,
+    @Serializable(with = InstantSerializer::class)
     val createdAt: Instant = Instant.now(),
     val tokenCount: Int? = null,
     val toolCalls: List<ToolCall>? = null,
