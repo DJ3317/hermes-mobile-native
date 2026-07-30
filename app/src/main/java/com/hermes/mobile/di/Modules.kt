@@ -1,5 +1,6 @@
 package com.hermes.mobile.di
 
+import com.hermes.mobile.data.local.Logger
 import com.hermes.mobile.data.local.datastore.AuthDataStore
 import com.hermes.mobile.data.remote.api.HermesApi
 import com.hermes.mobile.data.remote.websocket.HermesWebSocketClient
