@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -128,7 +129,7 @@ fun SettingsScreen(
                         label = { Text("密码") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
-                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation.getInstance()
+                        visualTransformation = PasswordVisualTransformation()
                     )
                     Spacer(Modifier.height(12.dp))
 
