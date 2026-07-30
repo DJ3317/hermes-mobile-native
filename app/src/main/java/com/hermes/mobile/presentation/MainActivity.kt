@@ -58,8 +58,13 @@ class MainActivity : ComponentActivity() {
                     "preview" to "预览" to Icons.Filled.Visibility,
                 )
 
+                val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
                 if (showMoreSheet) {
-                    ModalBottomSheet(onDismissRequest = { showMoreSheet = false }) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showMoreSheet = false },
+                        sheetState = sheetState
+                    ) {
                         LazyColumn(modifier = Modifier.padding(bottom = 32.dp)) {
                             items(moreItems) { item ->
                                 val (route, label) = item.first
