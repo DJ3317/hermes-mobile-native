@@ -27,6 +27,7 @@ data class SettingsUiState(
     val host: String = "http://192.168.31.250:9191",
     val token: String? = null,
     val username: String = "",
+    val password: String = "",
     val isConnected: Boolean = false,
     val isLoggingIn: Boolean = false,
     val themeMode: String = "system",
@@ -52,6 +53,7 @@ class SettingsViewModel @Inject constructor(
 
     fun setHost(host: String) { _uiState.update { it.copy(host = host) } }
     fun setUsername(username: String) { _uiState.update { it.copy(username = username) } }
+    fun setPassword(password: String) { _uiState.update { it.copy(password = password) } }
 
     fun testConnection() {
         viewModelScope.launch {
@@ -69,7 +71,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoggingIn = true) }
             try {
-                val token = loginUseCase(state.username, "password")
+                val token = loginUseCase(state.username, state.password)
                 _uiState.update { it.copy(token = token, isLoggingIn = false, error = null) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoggingIn = false, error = "登录失败: ${e.message}") }
@@ -117,6 +119,16 @@ fun SettingsScreen(
                         label = { Text("用户名") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
+                    )
+                    Spacer(Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = uiState.password,
+                        onValueChange = { viewModel.setPassword(it) },
+                        label = { Text("密码") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation.getInstance()
                     )
                     Spacer(Modifier.height(12.dp))
 
