@@ -2,9 +2,10 @@ package com.hermes.mobile.data.mapper
 
 import com.hermes.mobile.data.remote.api.dto.*
 import com.hermes.mobile.domain.models.*
+import java.time.Instant
 
 fun SessionDto.toDomain() = Session(
-    id = id, title = title, createdAt = createdAt, updatedAt = updatedAt,
+    id = id, title = title, createdAt = Instant.parse(createdAt), updatedAt = Instant.parse(updatedAt),
     messageCount = messageCount, archived = archived, pinned = pinned,
     profile = profile, model = model
 )
@@ -12,7 +13,7 @@ fun SessionDto.toDomain() = Session(
 fun MessageDto.toDomain() = Message(
     id = id, sessionId = sessionId,
     role = try { MessageRole.valueOf(role.uppercase()) } catch (_: Exception) { MessageRole.USER },
-    content = content, createdAt = createdAt, tokenCount = tokenCount,
+    content = content, createdAt = Instant.parse(createdAt), tokenCount = tokenCount,
     toolCalls = toolCalls?.map { it.toDomain() }
 )
 

@@ -34,7 +34,7 @@ class ChatRepositoryImpl @Inject constructor(
     }
 
     override suspend fun createSession(): Session {
-        return Session(id = "session-${System.currentTimeMillis()}", title = "新对话", createdAt = "", updatedAt = "")
+        return Session(id = "session-${System.currentTimeMillis()}", title = "新对话")
     }
 }
 

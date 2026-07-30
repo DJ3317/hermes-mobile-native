@@ -83,7 +83,7 @@ fun SessionItem(
     onDelete: () -> Unit
 ) {
     val timeAgo = try {
-        val instant = Instant.parse(session.updatedAt)
+        val instant = session.updatedAt
         val minutes = ChronoUnit.MINUTES.between(instant, Instant.now())
         when {
             minutes < 1 -> "刚刚"

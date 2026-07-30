@@ -39,7 +39,7 @@ class ChatViewModel @Inject constructor(
                     sessionId = sessionId,
                     role = MessageRole.USER,
                     content = text,
-                    createdAt = java.time.Instant.now().toString()
+                    createdAt = java.time.Instant.now()
                 ),
                 currentSessionId = sessionId,
                 isStreaming = true,
@@ -64,7 +64,7 @@ class ChatViewModel @Inject constructor(
                                         sessionId = sessionId,
                                         role = MessageRole.ASSISTANT,
                                         content = content,
-                                        createdAt = java.time.Instant.now().toString()
+                                        createdAt = java.time.Instant.now()
                                     ),
                                     streamingContent = null,
                                     isStreaming = false

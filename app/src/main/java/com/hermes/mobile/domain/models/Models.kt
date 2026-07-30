@@ -1,13 +1,25 @@
 package com.hermes.mobile.domain.models
 
+import java.time.Instant
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+
+object InstantSerializer : KSerializer<Instant> {
+    override val descriptor = PrimitiveSerialDescriptor("Instant", PrimitiveKind.STRING)
+    override fun serialize(encoder: Encoder, value: Instant) = encoder.encodeString(value.toString())
+    override fun deserialize(decoder: Decoder): Instant = Instant.parse(decoder.decodeString())
+}
 
 @Serializable
 data class Session(
     val id: String,
     val title: String,
-    val createdAt: String,
-    val updatedAt: String,
+    val createdAt: Instant = Instant.now(),
+    val updatedAt: Instant = Instant.now(),
     val messageCount: Int = 0,
     val archived: Boolean = false,
     val pinned: Boolean = false,
@@ -21,7 +33,7 @@ data class Message(
     val sessionId: String,
     val role: MessageRole,
     val content: String,
-    val createdAt: String,
+    val createdAt: Instant = Instant.now(),
     val tokenCount: Int? = null,
     val toolCalls: List<ToolCall>? = null,
     val toolResults: List<ToolResult>? = null

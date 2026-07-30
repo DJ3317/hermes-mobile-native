@@ -191,10 +191,7 @@ fun StreamingBubble(content: String) {
     }
 }
 
-private fun formatTime(iso: String): String {
-    return try {
-        val instant = java.time.Instant.parse(iso)
-        val local = instant.atZone(java.time.ZoneId.systemDefault()).toLocalTime()
-        "${local.hour.toString().padStart(2, '0')}:${local.minute.toString().padStart(2, '0')}"
-    } catch (_: Exception) { "" }
+private fun formatTime(instant: java.time.Instant): String {
+    val local = instant.atZone(java.time.ZoneId.systemDefault()).toLocalTime()
+    return "${local.hour.toString().padStart(2, '0')}:${local.minute.toString().padStart(2, '0')}"
 }
