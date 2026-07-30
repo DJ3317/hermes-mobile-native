@@ -89,7 +89,7 @@ class MessagingRepositoryImpl @Inject constructor(
 }
 
 @Singleton
-class ArtifactRepositoryImpl @Inject constructor : ArtifactRepository {
+class ArtifactRepositoryImpl @Inject constructor() : ArtifactRepository {
     override suspend fun getArtifacts(): List<Artifact> = emptyList()
     override suspend fun deleteArtifact(id: String) = Unit
 }
@@ -119,31 +119,31 @@ class AgentRepositoryImpl @Inject constructor(
 }
 
 @Singleton
-class StarmapRepositoryImpl @Inject constructor : StarmapRepository {
+class StarmapRepositoryImpl @Inject constructor() : StarmapRepository {
     override suspend fun getGraph(): List<StarmapNode> = emptyList()
 }
 
 @Singleton
-class ProjectRepositoryImpl @Inject constructor : ProjectRepository {
+class ProjectRepositoryImpl @Inject constructor() : ProjectRepository {
     override suspend fun getProjects(): List<Project> = emptyList()
     override suspend fun getProjectFiles(projectId: String): List<FileEntry> = emptyList()
     override suspend fun getFileContent(path: String): String = ""
 }
 
 @Singleton
-class FileRepositoryImpl @Inject constructor : FileRepository {
+class FileRepositoryImpl @Inject constructor() : FileRepository {
     override suspend fun listFiles(path: String): List<FileEntry> = emptyList()
     override suspend fun getFileContent(path: String): String = ""
 }
 
 @Singleton
-class ReviewRepositoryImpl @Inject constructor : ReviewRepository {
+class ReviewRepositoryImpl @Inject constructor() : ReviewRepository {
     override suspend fun getReviews(): List<CodeReview> = emptyList()
     override suspend fun getReviewDetail(id: String): CodeReview = CodeReview(id = id, title = "")
 }
 
 @Singleton
-class TerminalRepositoryImpl @Inject constructor : TerminalRepository {
+class TerminalRepositoryImpl @Inject constructor() : TerminalRepository {
     override suspend fun getSessions(): List<TerminalSession> = listOf(TerminalSession(id = "1"))
     override fun connect(sessionId: String): Flow<String> = kotlinx.coroutines.flow.emptyFlow()
     override suspend fun sendInput(sessionId: String, input: String) = Unit
@@ -151,7 +151,7 @@ class TerminalRepositoryImpl @Inject constructor : TerminalRepository {
 }
 
 @Singleton
-class PreviewRepositoryImpl @Inject constructor : PreviewRepository {
+class PreviewRepositoryImpl @Inject constructor() : PreviewRepository {
     override suspend fun getPreview(url: String): PreviewContent = PreviewContent(url = url)
 }
 
