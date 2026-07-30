@@ -25,22 +25,9 @@ jobs:
       - name: Build debug APK (自动签名)
         run: gradle assembleDebug --no-daemon
 
-      - name: Sign release APK with debug key
-        run: |
-          keytool -genkey -v -keystore debug.keystore -alias debug -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Debug, OU=, O=, L=, S=, C="
-          echo "storePassword=android" > keystore.properties
-          echo "keyPassword=android" >> keystore.properties
-          echo "keyAlias=debug" >> keystore.properties
-          echo "storeFile=debug.keystore" >> keystore.properties
-
-      - name: Build signed APK
-        run: gradle assembleRelease --no-daemon
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: hermes-mobile-apk
-          path: |
-            app/build/outputs/apk/release/*.apk
-            app/build/outputs/apk/debug/*.apk
+          path: app/build/outputs/apk/debug/*.apk
           retention-days: 30
