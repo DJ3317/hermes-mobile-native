@@ -139,7 +139,7 @@ class FileRepositoryImpl @Inject constructor() : FileRepository {
 @Singleton
 class ReviewRepositoryImpl @Inject constructor() : ReviewRepository {
     override suspend fun getReviews(): List<CodeReview> = emptyList()
-    override suspend fun getReviewDetail(id: String): CodeReview = CodeReview(id = id, title = "")
+    override suspend fun getReviewDetail(id: String): CodeReview = CodeReview(id = id, title = "", status = "")
 }
 
 @Singleton
