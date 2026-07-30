@@ -1,5 +1,6 @@
 package com.hermes.mobile.di
 
+import com.hermes.mobile.data.local.datastore.AuthDataStore
 import com.hermes.mobile.data.remote.api.HermesApi
 import com.hermes.mobile.data.remote.websocket.HermesWebSocketClient
 import com.hermes.mobile.data.repositories.*
@@ -29,9 +30,19 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(authDataStore: AuthDataStore): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
         return OkHttpClient.Builder()
+            .addInterceptor(Interceptor { chain ->
+                val original = chain.request()
+                val token = authDataStore.getToken()
+                val request = if (token != null) {
+                    original.newBuilder()
+                        .header("Authorization", if (token.startsWith("Basic ")) token else "Bearer $token")
+                        .build()
+                } else original
+                chain.proceed(request)
+            })
             .addInterceptor(Interceptor { chain ->
                 val request = chain.request().newBuilder()
                     .addHeader("Content-Type", "application/json")

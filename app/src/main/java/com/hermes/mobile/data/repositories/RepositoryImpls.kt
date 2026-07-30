@@ -158,7 +158,8 @@ class PreviewRepositoryImpl @Inject constructor() : PreviewRepository {
 @Singleton
 class ConfigRepositoryImpl @Inject constructor(
     private val api: HermesApi,
-    private val authStore: AuthDataStore
+    private val authStore: AuthDataStore,
+    private val okHttpClient: OkHttpClient
 ) : ConfigRepository {
     override suspend fun getConfig(): Map<String, String> = api.getConfig()
     override suspend fun saveConfig(key: String, value: String) { api.saveConfig(mapOf(key to value)) }
@@ -170,11 +171,31 @@ class ConfigRepositoryImpl @Inject constructor(
     override suspend fun toggleMcpServer(name: String, enabled: Boolean) = Unit
     override suspend fun getTools(): List<ToolConfig> = emptyList()
     override suspend fun toggleTool(name: String, enabled: Boolean) = Unit
+
     override suspend fun login(username: String, password: String): String {
-        val response = api.login(LoginRequest(username, password))
-        authStore.saveToken(response.token)
-        return response.token
+        // 方式1: JSON 登录
+        try {
+            val response = api.login(LoginRequest(username, password))
+            if (response.token.isNotBlank()) {
+                authStore.saveToken(response.token)
+                return response.token
+            }
+        } catch (_: Exception) { /* 失败后继续尝试 Basic Auth */ }
+
+        // 方式2: HTTP Basic Auth
+        val credentials = okhttp3.Credentials.basic(username, password)
+        val request = okhttp3.Request.Builder()
+            .url("http://192.168.31.250:9191/api/status")
+            .header("Authorization", credentials)
+            .build()
+        val response = okHttpClient.newCall(request).execute()
+        if (response.isSuccessful) {
+            authStore.saveToken(credentials) // 存储 Basic Auth 凭证作为 token
+            return credentials
+        }
+        throw Exception("HTTP ${response.code} ${response.message}")
     }
+
     override suspend fun logout() { authStore.clearToken() }
     override suspend fun getStatus(): Map<String, String> = mapOf()
 }
