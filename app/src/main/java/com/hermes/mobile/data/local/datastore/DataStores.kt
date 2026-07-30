@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.hermes.mobile.domain.models.AppSettings
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -48,7 +50,15 @@ class SettingsDataStore @Inject constructor(
 class AuthDataStore @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private val prefs = context.getSharedPreferences("hermes_auth", Context.MODE_PRIVATE)
+    private val masterKey = MasterKey.Builder(context)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+
+    private val prefs = EncryptedSharedPreferences.create(
+        context, "hermes_auth_secure", masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
 
     fun getToken(): String? = prefs.getString("token", null)
 
