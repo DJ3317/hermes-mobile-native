@@ -96,6 +96,7 @@ object UseCaseModule {
     @Provides @Singleton fun provideGetSessionsUseCase(repo: SessionRepository) = com.hermes.mobile.domain.usecases.sessions.GetSessionsUseCase(repo)
     @Provides @Singleton fun provideSearchSessionsUseCase(repo: SessionRepository) = com.hermes.mobile.domain.usecases.sessions.SearchSessionsUseCase(repo)
     @Provides @Singleton fun provideDeleteSessionUseCase(repo: SessionRepository) = com.hermes.mobile.domain.usecases.sessions.DeleteSessionUseCase(repo)
+    @Provides @Singleton fun provideRenameSessionUseCase(repo: SessionRepository) = com.hermes.mobile.domain.usecases.sessions.RenameSessionUseCase(repo)
     // Skills
     @Provides @Singleton fun provideGetSkillsUseCase(repo: SkillRepository) = com.hermes.mobile.domain.usecases.skills.GetSkillsUseCase(repo)
     @Provides @Singleton fun provideToggleSkillUseCase(repo: SkillRepository) = com.hermes.mobile.domain.usecases.skills.ToggleSkillUseCase(repo)
@@ -107,4 +108,15 @@ object UseCaseModule {
     // Profiles
     @Provides @Singleton fun provideGetProfilesUseCase(repo: ProfileRepository) = com.hermes.mobile.domain.usecases.profiles.GetProfilesUseCase(repo)
     @Provides @Singleton fun provideCreateProfileUseCase(repo: ProfileRepository) = com.hermes.mobile.domain.usecases.profiles.CreateProfileUseCase(repo)
+    @Provides @Singleton fun provideDeleteProfileUseCase(repo: ProfileRepository) = com.hermes.mobile.domain.usecases.profiles.DeleteProfileUseCase(repo)
+    // Artifacts
+    @Provides @Singleton fun provideGetArtifactsUseCase(repo: ArtifactRepository) = com.hermes.mobile.domain.usecases.artifacts.GetArtifactsUseCase(repo)
+    @Provides @Singleton fun provideDeleteArtifactUseCase(repo: ArtifactRepository) = com.hermes.mobile.domain.usecases.artifacts.DeleteArtifactUseCase(repo)
+    // Cron
+    @Provides @Singleton fun provideGetCronTasksUseCase(repo: CronRepository) = com.hermes.mobile.domain.usecases.cron.GetCronTasksUseCase(repo)
+    @Provides @Singleton fun provideToggleCronTaskUseCase(repo: CronRepository) = com.hermes.mobile.domain.usecases.cron.ToggleCronTaskUseCase(repo)
+    // Agents
+    @Provides @Singleton fun provideGetAgentsUseCase(repo: AgentRepository) = com.hermes.mobile.domain.usecases.agents.GetAgentsUseCase(repo)
+    @Provides @Singleton fun providePauseAgentUseCase(repo: AgentRepository) = com.hermes.mobile.domain.usecases.agents.PauseAgentUseCase(repo)
+    @Provides @Singleton fun provideResumeAgentUseCase(repo: AgentRepository) = com.hermes.mobile.domain.usecases.agents.ResumeAgentUseCase(repo)
 }
