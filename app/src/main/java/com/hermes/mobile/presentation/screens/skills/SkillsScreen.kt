@@ -12,7 +12,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hermes.mobile.domain.models.Skill
-import com.hermes.mobile.domain.repositories.SkillRepository
+import com.hermes.mobile.domain.usecases.skills.GetSkillsUseCase
+import com.hermes.mobile.domain.usecases.skills.ToggleSkillUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -25,7 +26,8 @@ data class SkillsUiState(
 
 @HiltViewModel
 class SkillsViewModel @Inject constructor(
-    private val skillRepository: SkillRepository
+    private val getSkillsUseCase: GetSkillsUseCase,
+    private val toggleSkillUseCase: ToggleSkillUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SkillsUiState())
     val uiState: StateFlow<SkillsUiState> = _uiState.asStateFlow()
@@ -36,14 +38,14 @@ class SkillsViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                val skills = skillRepository.getSkills()
+                val skills = getSkillsUseCase()
                 _uiState.update { it.copy(skills = skills, isLoading = false) }
             } catch (_: Exception) { _uiState.update { it.copy(isLoading = false) } }
         }
     }
 
     fun toggleSkill(name: String, enabled: Boolean) {
-        viewModelScope.launch { try { skillRepository.toggleSkill(name, enabled); loadSkills() } catch (_: Exception) { } }
+        viewModelScope.launch { try { toggleSkillUseCase(name, enabled); loadSkills() } catch (_: Exception) { } }
     }
 }
 

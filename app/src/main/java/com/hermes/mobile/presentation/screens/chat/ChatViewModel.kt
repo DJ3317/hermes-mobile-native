@@ -3,7 +3,9 @@ package com.hermes.mobile.presentation.screens.chat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hermes.mobile.domain.models.*
-import com.hermes.mobile.domain.repositories.ChatRepository
+import com.hermes.mobile.domain.usecases.chat.SendMessageUseCase
+import com.hermes.mobile.domain.usecases.chat.StopStreamingUseCase
+import com.hermes.mobile.domain.usecases.chat.GetMessagesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -20,7 +22,9 @@ data class ChatUiState(
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
-    private val chatRepository: ChatRepository
+    private val sendMessageUseCase: SendMessageUseCase,
+    private val stopStreamingUseCase: StopStreamingUseCase,
+    private val getMessagesUseCase: GetMessagesUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -46,7 +50,7 @@ class ChatViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                chatRepository.streamMessage(sessionId, text).collect { event ->
+                sendMessageUseCase(sessionId, text).collect { event ->
                     when (event) {
                         is StreamEvent.MessageDelta -> {
                             _uiState.update { it.copy(streamingContent = (it.streamingContent ?: "") + event.delta) }
@@ -79,15 +83,21 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun setInputText(text: String) {
-        _uiState.update { it.copy(inputText = text) }
+    fun stopStreaming() {
+        val sessionId = _uiState.value.currentSessionId ?: return
+        viewModelScope.launch { stopStreamingUseCase(sessionId) }
     }
 
-    fun clearChat() {
-        _uiState.update { ChatUiState() }
+    fun loadMessages(sessionId: String) {
+        viewModelScope.launch {
+            try {
+                val messages = getMessagesUseCase(sessionId)
+                _uiState.update { it.copy(messages = messages, currentSessionId = sessionId) }
+            } catch (_: Exception) { }
+        }
     }
 
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
-    }
+    fun setInputText(text: String) { _uiState.update { it.copy(inputText = text) } }
+    fun clearChat() { _uiState.update { ChatUiState() } }
+    fun clearError() { _uiState.update { it.copy(error = null) } }
 }

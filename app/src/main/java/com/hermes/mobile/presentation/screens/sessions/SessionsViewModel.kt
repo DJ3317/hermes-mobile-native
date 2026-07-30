@@ -3,7 +3,10 @@ package com.hermes.mobile.presentation.screens.sessions
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hermes.mobile.domain.models.Session
-import com.hermes.mobile.domain.repositories.SessionRepository
+import com.hermes.mobile.domain.usecases.sessions.GetSessionsUseCase
+import com.hermes.mobile.domain.usecases.sessions.SearchSessionsUseCase
+import com.hermes.mobile.domain.usecases.sessions.DeleteSessionUseCase
+import com.hermes.mobile.domain.usecases.sessions.RenameSessionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -18,7 +21,10 @@ data class SessionsUiState(
 
 @HiltViewModel
 class SessionsViewModel @Inject constructor(
-    private val sessionRepository: SessionRepository
+    private val getSessionsUseCase: GetSessionsUseCase,
+    private val searchSessionsUseCase: SearchSessionsUseCase,
+    private val deleteSessionUseCase: DeleteSessionUseCase,
+    private val renameSessionUseCase: RenameSessionUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SessionsUiState())
@@ -30,7 +36,7 @@ class SessionsViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             try {
-                val sessions = sessionRepository.listSessions()
+                val sessions = getSessionsUseCase()
                 _uiState.update { it.copy(sessions = sessions, isLoading = false) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message, isLoading = false) }
@@ -43,7 +49,7 @@ class SessionsViewModel @Inject constructor(
         viewModelScope.launch {
             if (query.isBlank()) { loadSessions(); return@launch }
             try {
-                val sessions = sessionRepository.searchSessions(query)
+                val sessions = searchSessionsUseCase(query)
                 _uiState.update { it.copy(sessions = sessions) }
             } catch (_: Exception) { }
         }
@@ -51,16 +57,13 @@ class SessionsViewModel @Inject constructor(
 
     fun deleteSession(id: String) {
         viewModelScope.launch {
-            try {
-                sessionRepository.deleteSession(id)
-                loadSessions()
-            } catch (_: Exception) { }
+            try { deleteSessionUseCase(id); loadSessions() } catch (_: Exception) { }
         }
     }
 
     fun renameSession(id: String, title: String) {
         viewModelScope.launch {
-            try { sessionRepository.renameSession(id, title); loadSessions() } catch (_: Exception) { }
+            try { renameSessionUseCase(id, title); loadSessions() } catch (_: Exception) { }
         }
     }
 }

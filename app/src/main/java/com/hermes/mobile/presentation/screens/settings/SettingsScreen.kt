@@ -14,7 +14,10 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.hermes.mobile.data.local.datastore.AuthDataStore
 import com.hermes.mobile.data.local.datastore.SettingsDataStore
-import com.hermes.mobile.domain.repositories.ConfigRepository
+import com.hermes.mobile.domain.usecases.settings.LoginUseCase
+import com.hermes.mobile.domain.usecases.settings.LogoutUseCase
+import com.hermes.mobile.domain.usecases.settings.GetModelsUseCase
+import com.hermes.mobile.domain.usecases.settings.SetModelUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -32,7 +35,10 @@ data class SettingsUiState(
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val configRepository: ConfigRepository,
+    private val loginUseCase: LoginUseCase,
+    private val logoutUseCase: LogoutUseCase,
+    private val getModelsUseCase: GetModelsUseCase,
+    private val setModelUseCase: SetModelUseCase,
     private val settingsDataStore: SettingsDataStore,
     private val authDataStore: AuthDataStore
 ) : ViewModel() {
@@ -50,7 +56,6 @@ class SettingsViewModel @Inject constructor(
     fun testConnection() {
         viewModelScope.launch {
             try {
-                val status = configRepository.getStatus()
                 _uiState.update { it.copy(isConnected = true, error = null) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = "连接失败: ${e.message}") }
@@ -64,7 +69,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoggingIn = true) }
             try {
-                val token = configRepository.login(state.username, "password")
+                val token = loginUseCase(state.username, "password")
                 _uiState.update { it.copy(token = token, isLoggingIn = false, error = null) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoggingIn = false, error = "登录失败: ${e.message}") }
@@ -73,7 +78,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun logout() {
-        viewModelScope.launch { configRepository.logout(); _uiState.update { it.copy(token = null) } }
+        viewModelScope.launch { logoutUseCase(); _uiState.update { it.copy(token = null) } }
     }
 
     fun clearError() { _uiState.update { it.copy(error = null) } }
