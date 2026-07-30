@@ -5,11 +5,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-val HermesBlue = Color(0xFF0A84FF)
-val HermesBlueDark = Color(0xFF007AFF)
-val SurfaceDark = Color(0xFF1C1C1E)
-val SurfaceLight = Color(0xFFF5F5F7)
-
 private val LightColorScheme = lightColorScheme(
     primary = HermesBlue,
     onPrimary = Color.White,
