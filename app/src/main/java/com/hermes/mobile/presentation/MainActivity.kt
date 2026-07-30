@@ -10,32 +10,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.hermes.mobile.presentation.navigation.BottomTab
+import com.hermes.mobile.presentation.navigation.HermesBottomBar
 import com.hermes.mobile.presentation.navigation.HermesNavGraph
-import com.hermes.mobile.presentation.navigation.Routes
+import com.hermes.mobile.presentation.navigation.bottomTabs
 import com.hermes.mobile.presentation.theme.HermesTheme
 import dagger.hilt.android.AndroidEntryPoint
-
-sealed class BottomTab(val route: String, val label: String, val icon: ImageVector) {
-    data object Chat : BottomTab("chat", "对话", Icons.Filled.Chat)
-    data object Skills : BottomTab("skills", "技能", Icons.Filled.Psychology)
-    data object Messaging : BottomTab("messaging", "消息", Icons.Filled.Hub)
-    data object More : BottomTab("more", "更多", Icons.Filled.MoreHoriz)
-    data object Settings : BottomTab("settings", "设置", Icons.Filled.Settings)
-}
-
-val bottomTabs = listOf(BottomTab.Chat, BottomTab.Skills, BottomTab.Messaging, BottomTab.More, BottomTab.Settings)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
@@ -96,24 +86,15 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     bottomBar = {
                         if (showBottomBar) {
-                            NavigationBar {
-                                bottomTabs.forEach { tab ->
-                                    NavigationBarItem(
-                                        icon = { Icon(tab.icon, contentDescription = tab.label) },
-                                        label = { Text(tab.label) },
-                                        selected = currentDestination?.hierarchy?.any { it.route == tab.route } == true,
-                                        onClick = {
-                                            if (tab.route == "more") {
-                                                showMoreSheet = true
-                                            } else {
-                                                navController.navigate(tab.route) {
-                                                    popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                                                    launchSingleTop = true
-                                                    restoreState = true
-                                                }
-                                            }
-                                        }
-                                    )
+                            HermesBottomBar(currentDestination = currentDestination) { tab ->
+                                if (tab.route == "more") {
+                                    showMoreSheet = true
+                                } else {
+                                    navController.navigate(tab.route) {
+                                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
                                 }
                             }
                         }
