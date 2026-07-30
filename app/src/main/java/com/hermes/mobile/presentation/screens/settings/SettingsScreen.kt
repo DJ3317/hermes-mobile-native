@@ -13,6 +13,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.hermes.mobile.data.local.Logger
 import com.hermes.mobile.data.local.datastore.AuthDataStore
 import com.hermes.mobile.data.local.datastore.SettingsDataStore
 import com.hermes.mobile.domain.usecases.settings.LoginUseCase
@@ -42,7 +43,8 @@ class SettingsViewModel @Inject constructor(
     private val getModelsUseCase: GetModelsUseCase,
     private val setModelUseCase: SetModelUseCase,
     private val settingsDataStore: SettingsDataStore,
-    private val authDataStore: AuthDataStore
+    private val authDataStore: AuthDataStore,
+    private val logger: Logger
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -72,10 +74,14 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoggingIn = true) }
             try {
+                logger.i("Login", "尝试登录: ${state.username}")
                 val token = loginUseCase(state.username, state.password)
                 _uiState.update { it.copy(token = token, isLoggingIn = false, error = null) }
+                logger.i("Login", "登录成功")
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoggingIn = false, error = "登录失败: ${e.message}") }
+                val msg = e.message ?: "未知错误"
+                logger.e("Login", "登录失败", e)
+                _uiState.update { it.copy(isLoggingIn = false, error = "登录失败: $msg") }
             }
         }
     }
