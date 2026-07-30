@@ -6,6 +6,7 @@ import com.hermes.mobile.data.repositories.*
 import com.hermes.mobile.domain.repositories.*
 import dagger.Module
 import dagger.Provides
+import dagger.Binds
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json

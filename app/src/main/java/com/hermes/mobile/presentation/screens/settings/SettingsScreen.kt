@@ -1,7 +1,6 @@
 package com.hermes.mobile.presentation.screens.settings
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hermes.mobile.data.local.datastore.AuthDataStore
 import com.hermes.mobile.data.local.datastore.SettingsDataStore
