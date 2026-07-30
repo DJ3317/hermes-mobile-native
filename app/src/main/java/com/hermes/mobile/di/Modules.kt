@@ -84,3 +84,27 @@ abstract class RepositoryModule {
     @Binds @Singleton abstract fun bindConfigRepo(impl: ConfigRepositoryImpl): ConfigRepository
     @Binds @Singleton abstract fun bindSearchRepo(impl: SearchRepositoryImpl): SearchRepository
 }
+
+@Module
+@InstallIn(SingletonComponent::class)
+object UseCaseModule {
+    // Chat
+    @Provides @Singleton fun provideSendMessageUseCase(repo: ChatRepository) = com.hermes.mobile.domain.usecases.chat.SendMessageUseCase(repo)
+    @Provides @Singleton fun provideStopStreamingUseCase(repo: ChatRepository) = com.hermes.mobile.domain.usecases.chat.StopStreamingUseCase(repo)
+    @Provides @Singleton fun provideGetMessagesUseCase(repo: ChatRepository) = com.hermes.mobile.domain.usecases.chat.GetMessagesUseCase(repo)
+    // Sessions
+    @Provides @Singleton fun provideGetSessionsUseCase(repo: SessionRepository) = com.hermes.mobile.domain.usecases.sessions.GetSessionsUseCase(repo)
+    @Provides @Singleton fun provideSearchSessionsUseCase(repo: SessionRepository) = com.hermes.mobile.domain.usecases.sessions.SearchSessionsUseCase(repo)
+    @Provides @Singleton fun provideDeleteSessionUseCase(repo: SessionRepository) = com.hermes.mobile.domain.usecases.sessions.DeleteSessionUseCase(repo)
+    // Skills
+    @Provides @Singleton fun provideGetSkillsUseCase(repo: SkillRepository) = com.hermes.mobile.domain.usecases.skills.GetSkillsUseCase(repo)
+    @Provides @Singleton fun provideToggleSkillUseCase(repo: SkillRepository) = com.hermes.mobile.domain.usecases.skills.ToggleSkillUseCase(repo)
+    // Settings
+    @Provides @Singleton fun provideGetModelsUseCase(repo: ConfigRepository) = com.hermes.mobile.domain.usecases.settings.GetModelsUseCase(repo)
+    @Provides @Singleton fun provideSetModelUseCase(repo: ConfigRepository) = com.hermes.mobile.domain.usecases.settings.SetModelUseCase(repo)
+    @Provides @Singleton fun provideLoginUseCase(repo: ConfigRepository) = com.hermes.mobile.domain.usecases.settings.LoginUseCase(repo)
+    @Provides @Singleton fun provideLogoutUseCase(repo: ConfigRepository) = com.hermes.mobile.domain.usecases.settings.LogoutUseCase(repo)
+    // Profiles
+    @Provides @Singleton fun provideGetProfilesUseCase(repo: ProfileRepository) = com.hermes.mobile.domain.usecases.profiles.GetProfilesUseCase(repo)
+    @Provides @Singleton fun provideCreateProfileUseCase(repo: ProfileRepository) = com.hermes.mobile.domain.usecases.profiles.CreateProfileUseCase(repo)
+}
