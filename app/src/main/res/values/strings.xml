@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hermes Mobile</string>
+    <string name="tab_chat">对话</string>
+    <string name="tab_skills">技能</string>
+    <string name="tab_messaging">消息</string>
+    <string name="tab_more">更多</string>
+    <string name="tab_settings">设置</string>
+    <string name="login">登录</string>
+    <string name="logout">退出登录</string>
+    <string name="username">用户名</string>
+    <string name="password">密码</string>
+    <string name="test_connection">测试连接</string>
+    <string name="server_address">服务器地址</string>
+    <string name="send">发送</string>
+    <string name="input_hint">输入消息...</string>
+    <string name="search">搜索</string>
+    <string name="retry">重试</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">确定</string>
+    <string name="delete">删除</string>
+    <string name="no_data">暂无数据</string>
+    <string name="loading">加载中...</string>
+    <string name="connection_failed">连接失败</string>
+    <string name="login_failed">登录失败</string>
+    <string name="login_success">登录成功</string>
+    <string name="disconnected">未连接</string>
+    <string name="connected">已连接</string>
+    <string name="connecting">连接中...</string>
+</resources>
