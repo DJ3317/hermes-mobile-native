@@ -20,28 +20,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.hermes.mobile.presentation.screens.chat.ChatScreen
-import com.hermes.mobile.presentation.screens.sessions.SessionsScreen
-import com.hermes.mobile.presentation.screens.skills.SkillsScreen
-import com.hermes.mobile.presentation.screens.messaging.MessagingScreen
-import com.hermes.mobile.presentation.screens.settings.SettingsScreen
-import com.hermes.mobile.presentation.screens.artifacts.ArtifactsScreen
-import com.hermes.mobile.presentation.screens.cron.CronScreen
-import com.hermes.mobile.presentation.screens.agents.AgentsScreen
-import com.hermes.mobile.presentation.screens.profiles.ProfilesScreen
-import com.hermes.mobile.presentation.screens.model.ModelConfigScreen
-import com.hermes.mobile.presentation.screens.starmap.StarmapScreen
-import com.hermes.mobile.presentation.screens.projects.ProjectsScreen
-import com.hermes.mobile.presentation.screens.files.FilesScreen
-import com.hermes.mobile.presentation.screens.review.ReviewScreen
-import com.hermes.mobile.presentation.screens.terminal.TerminalScreen
-import com.hermes.mobile.presentation.screens.preview.PreviewScreen
+import com.hermes.mobile.presentation.navigation.HermesNavGraph
+import com.hermes.mobile.presentation.navigation.Routes
 import com.hermes.mobile.presentation.theme.HermesTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -137,28 +119,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) { padding ->
-                    NavHost(
-                        navController = navController,
-                        startDestination = BottomTab.Chat.route,
-                        modifier = Modifier.padding(padding)
-                    ) {
-                        composable(BottomTab.Chat.route) { ChatScreen(navController = navController) }
-                        composable(BottomTab.Skills.route) { SkillsScreen() }
-                        composable(BottomTab.Messaging.route) { MessagingScreen() }
-                        composable(BottomTab.Settings.route) { SettingsScreen(navController = navController) }
-                        composable("sessions") { SessionsScreen(navController = navController) }
-                        composable("artifacts") { ArtifactsScreen() }
-                        composable("cron") { CronScreen() }
-                        composable("agents") { AgentsScreen() }
-                        composable("profiles") { ProfilesScreen() }
-                        composable("model_config") { ModelConfigScreen() }
-                        composable("starmap") { StarmapScreen() }
-                        composable("projects") { ProjectsScreen() }
-                        composable("files") { FilesScreen() }
-                        composable("review") { ReviewScreen() }
-                        composable("terminal") { TerminalScreen() }
-                        composable("preview") { PreviewScreen() }
-                    }
+                    HermesNavGraph(navController = navController, modifier = Modifier.padding(padding))
                 }
             }
         }
