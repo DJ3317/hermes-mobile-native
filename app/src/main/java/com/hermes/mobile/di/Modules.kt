@@ -92,6 +92,7 @@ object UseCaseModule {
     @Provides @Singleton fun provideSendMessageUseCase(repo: ChatRepository) = com.hermes.mobile.domain.usecases.chat.SendMessageUseCase(repo)
     @Provides @Singleton fun provideStopStreamingUseCase(repo: ChatRepository) = com.hermes.mobile.domain.usecases.chat.StopStreamingUseCase(repo)
     @Provides @Singleton fun provideGetMessagesUseCase(repo: ChatRepository) = com.hermes.mobile.domain.usecases.chat.GetMessagesUseCase(repo)
+    @Provides @Singleton fun provideStreamMessageUseCase(repo: ChatRepository) = com.hermes.mobile.domain.usecases.chat.StreamMessageUseCase(repo)
     // Sessions
     @Provides @Singleton fun provideGetSessionsUseCase(repo: SessionRepository) = com.hermes.mobile.domain.usecases.sessions.GetSessionsUseCase(repo)
     @Provides @Singleton fun provideSearchSessionsUseCase(repo: SessionRepository) = com.hermes.mobile.domain.usecases.sessions.SearchSessionsUseCase(repo)

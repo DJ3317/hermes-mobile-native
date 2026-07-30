@@ -25,3 +25,10 @@ class GetMessagesUseCase @Inject constructor(
     suspend operator fun invoke(sessionId: String) =
         chatRepository.getMessages(sessionId)
 }
+
+class StreamMessageUseCase @Inject constructor(
+    private val chatRepository: ChatRepository
+) {
+    operator fun invoke(sessionId: String, content: String): Flow<StreamEvent> =
+        chatRepository.streamMessage(sessionId, content)
+}
