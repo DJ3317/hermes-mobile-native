@@ -45,7 +45,8 @@ fun HermesTheme(
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography(),
+        typography = HermesTypography,
+        shapes = HermesShapes,
         content = content
     )
 }
