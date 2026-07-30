@@ -158,8 +158,7 @@ class PreviewRepositoryImpl @Inject constructor() : PreviewRepository {
 @Singleton
 class ConfigRepositoryImpl @Inject constructor(
     private val api: HermesApi,
-    private val authStore: AuthDataStore,
-    private val okHttpClient: OkHttpClient
+    private val authStore: AuthDataStore
 ) : ConfigRepository {
     override suspend fun getConfig(): Map<String, String> = api.getConfig()
     override suspend fun saveConfig(key: String, value: String) { api.saveConfig(mapOf(key to value)) }
@@ -182,18 +181,24 @@ class ConfigRepositoryImpl @Inject constructor(
             }
         } catch (_: Exception) { /* 失败后继续尝试 Basic Auth */ }
 
-        // 方式2: HTTP Basic Auth
-        val credentials = okhttp3.Credentials.basic(username, password)
-        val request = okhttp3.Request.Builder()
-            .url("http://192.168.31.250:9191/api/status")
-            .header("Authorization", credentials)
-            .build()
-        val response = okHttpClient.newCall(request).execute()
-        if (response.isSuccessful) {
-            authStore.saveToken(credentials) // 存储 Basic Auth 凭证作为 token
-            return credentials
+        // 方式2: HTTP Basic Auth — 使用 java.net.URL 避免 OkHttp 依赖
+        val credentials = java.util.Base64.getEncoder().encodeToString("$username:$password".toByteArray())
+        val url = java.net.URL("http://192.168.31.250:9191/api/status")
+        val conn = url.openConnection() as java.net.HttpURLConnection
+        conn.setRequestProperty("Authorization", "Basic $credentials")
+        conn.connectTimeout = 10000
+        conn.readTimeout = 10000
+        return try {
+            val code = conn.responseCode
+            if (code in 200..299) {
+                authStore.saveToken("Basic $credentials")
+                "Basic $credentials"
+            } else {
+                throw Exception("HTTP $code")
+            }
+        } finally {
+            conn.disconnect()
         }
-        throw Exception("HTTP ${response.code} ${response.message}")
     }
 
     override suspend fun logout() { authStore.clearToken() }
