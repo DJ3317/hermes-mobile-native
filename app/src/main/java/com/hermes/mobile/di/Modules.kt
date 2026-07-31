@@ -32,7 +32,10 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(authDataStore: AuthDataStore): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
+        val logging = HttpLoggingInterceptor().apply {
+            // 只记录 BASIC 级别（方法/URL/状态码），不记录请求体/响应体，避免 token 泄露到 Logcat
+            level = HttpLoggingInterceptor.Level.BASIC
+        }
         return OkHttpClient.Builder()
             .addInterceptor(Interceptor { chain ->
                 val original = chain.request()
