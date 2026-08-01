@@ -19,9 +19,26 @@ import javax.inject.Singleton
 class ChatRepositoryImpl @Inject constructor(
     private val api: HermesApi,
     private val wsClient: HermesWebSocketClient,
-    private val authStore: AuthDataStore
+    private val authStore: AuthDataStore,
+    private val settingsDataStore: SettingsDataStore
 ) : ChatRepository {
+    /** 确保 WebSocket 已连接（用配置的 host + token） */
+    private fun ensureConnected(): Boolean {
+        if (wsClient.isConnected()) return true
+        val host = try {
+            kotlinx.coroutines.runBlocking { settingsDataStore.settings.first().backendHost }
+        } catch (_: Exception) { "http://192.168.31.250:9191" }
+        val wsUrl = host.replace("http://", "ws://").replace("https://", "wss://").trimEnd('/') + "/api/ws"
+        val token = authStore.getToken()
+        return wsClient.connect(wsUrl, token)
+    }
+
     override fun streamMessage(sessionId: String, content: String): Flow<StreamEvent> {
+        if (!ensureConnected()) {
+            return kotlinx.coroutines.flow.flow {
+                emit(StreamEvent.Error(sessionId, "WebSocket 未连接，请先测试连接"))
+            }
+        }
         wsClient.sendText(
             """{"jsonrpc":"2.0","id":"r1","method":"prompt.submit","params":{"session_id":"$sessionId","text":"${content.replace("\"","\\\"")}"}}"""
         )
@@ -29,6 +46,7 @@ class ChatRepositoryImpl @Inject constructor(
     }
 
     override suspend fun stopStreaming(sessionId: String) {
+        ensureConnected()
         wsClient.sendText("""{"jsonrpc":"2.0","id":"r2","method":"prompt.stop","params":{"session_id":"$sessionId"}}""")
     }
 
