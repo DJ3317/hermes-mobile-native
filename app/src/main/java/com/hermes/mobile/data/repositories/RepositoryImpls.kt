@@ -239,7 +239,13 @@ class ConfigRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() { authStore.clearToken() }
-    override suspend fun getStatus(): Map<String, String> = mapOf()
+    override suspend fun getStatus(): Map<String, String> {
+        val status = api.getStatus()
+        return mapOf(
+            "status" to status.status,
+            "version" to (status.version ?: "")
+        )
+    }
 }
 
 @Singleton

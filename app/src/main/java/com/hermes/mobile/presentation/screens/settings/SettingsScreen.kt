@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 import com.hermes.mobile.data.local.Logger
 import com.hermes.mobile.data.local.datastore.AuthDataStore
 import com.hermes.mobile.data.local.datastore.SettingsDataStore
+import com.hermes.mobile.domain.repositories.ConfigRepository
 import com.hermes.mobile.domain.usecases.settings.LoginUseCase
 import com.hermes.mobile.domain.usecases.settings.LogoutUseCase
 import com.hermes.mobile.domain.usecases.settings.GetModelsUseCase
@@ -44,6 +45,7 @@ class SettingsViewModel @Inject constructor(
     private val setModelUseCase: SetModelUseCase,
     private val settingsDataStore: SettingsDataStore,
     private val authDataStore: AuthDataStore,
+    private val configRepository: ConfigRepository,
     private val logger: Logger
 ) : ViewModel() {
 
@@ -84,11 +86,18 @@ class SettingsViewModel @Inject constructor(
     fun setPassword(password: String) { _uiState.update { it.copy(password = password) } }
 
     fun testConnection() {
+        val state = _uiState.value
+        if (state.host.isBlank()) { _uiState.update { it.copy(error = "请先输入服务器地址") }; return }
         viewModelScope.launch {
             try {
+                logger.i("Connection", "测试连接: ${state.host}")
+                settingsDataStore.saveBackendHost(state.host.trim())
+                val status = configRepository.getStatus()
                 _uiState.update { it.copy(isConnected = true, error = null) }
+                logger.i("Connection", "连接成功: ${status["status"]} v${status["version"]}")
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = "连接失败: ${e.message}") }
+                logger.e("Connection", "连接失败", e)
+                _uiState.update { it.copy(isConnected = false, error = "连接失败: ${e.message ?: "未知错误"}") }
             }
         }
     }
