@@ -1,5 +1,6 @@
 package com.hermes.mobile.presentation.theme
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -9,7 +10,7 @@ private val LightColorScheme = lightColorScheme(
     primary = HermesBlue,
     onPrimary = Color.White,
     primaryContainer = Color(0xFFE9F2FF),
-    background = Color.White,
+    background = Color(0xFFF8F8FA),
     surface = SurfaceLight,
     surfaceVariant = Color(0xFFE5E5EA),
     onBackground = Color(0xFF1D1D1F),
@@ -25,7 +26,7 @@ private val DarkColorScheme = darkColorScheme(
     primary = HermesBlueDark,
     onPrimary = Color.White,
     primaryContainer = Color(0xFF1A2A3A),
-    background = Color.Black,
+    background = Color(0xFF0E0E10),
     surface = SurfaceDark,
     surfaceVariant = Color(0xFF2C2C2E),
     onBackground = Color(0xFFF5F5F7),
@@ -37,12 +38,25 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = Color(0xFFBF5AF2)
 )
 
+/**
+ * Hermes 主题
+ * @param darkTheme 是否深色
+ * @param useDynamicColor Android 12+ 使用动态取色
+ */
 @Composable
 fun HermesTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    useDynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val colorScheme = when {
+        useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (darkTheme) dynamicDarkColorScheme(androidx.compose.ui.platform.LocalContext.current)
+            else dynamicLightColorScheme(androidx.compose.ui.platform.LocalContext.current)
+        }
+        darkTheme -> DarkColorScheme
+        else -> LightColorScheme
+    }
     MaterialTheme(
         colorScheme = colorScheme,
         typography = HermesTypography,
