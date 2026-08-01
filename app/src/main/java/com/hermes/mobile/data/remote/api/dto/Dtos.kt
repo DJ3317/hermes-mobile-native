@@ -129,6 +129,11 @@ data class LoginResponse(
 )
 
 @Serializable
+data class WsTicketResponse(
+    val ticket: String = ""
+)
+
+@Serializable
 data class ModelSetRequest(
     val scope: String = "global",
     val provider: String,

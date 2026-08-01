@@ -22,7 +22,7 @@ class ChatRepositoryImpl @Inject constructor(
     private val authStore: AuthDataStore,
     private val settingsDataStore: SettingsDataStore
 ) : ChatRepository {
-    /** 确保 WebSocket 已连接（用配置的 host + token） */
+    /** 确保 WebSocket 已连接（用配置的 host + ws-ticket 认证） */
     private fun ensureConnected(): Boolean {
         if (wsClient.isConnected()) return true
         val host = try {
@@ -30,8 +30,13 @@ class ChatRepositoryImpl @Inject constructor(
         } catch (_: Exception) { "" }
         if (host.isBlank()) return false
         val wsUrl = host.replace("http://", "ws://").replace("https://", "wss://").trimEnd('/') + "/api/ws"
-        val token = authStore.getToken()
-        return wsClient.connect(wsUrl, token)
+        // 优先获取一次性 ws-ticket 作为 sub-protocol 认证（hermes-agent 标准）
+        var authToken: String? = authStore.getToken()
+        try {
+            val ticket = kotlinx.coroutines.runBlocking { api.getWsTicket().ticket }
+            if (ticket.isNotBlank()) authToken = ticket
+        } catch (_: Exception) { /* ticket 失败则回退 token */ }
+        return wsClient.connect(wsUrl, authToken)
     }
 
     override fun streamMessage(sessionId: String, content: String): Flow<StreamEvent> {

@@ -92,7 +92,9 @@ class SettingsViewModel @Inject constructor(
             try {
                 logger.i("Connection", "测试连接: ${state.host}")
                 settingsDataStore.saveBackendHost(state.host.trim())
-                val status = configRepository.getStatus()
+                val status = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    configRepository.getStatus()
+                }
                 _uiState.update { it.copy(isConnected = true, error = null) }
                 logger.i("Connection", "连接成功: ${status["status"]} v${status["version"]}")
             } catch (e: Exception) {
