@@ -2,6 +2,7 @@ package com.hermes.mobile.di
 
 import com.hermes.mobile.data.local.Logger
 import com.hermes.mobile.data.local.datastore.AuthDataStore
+import com.hermes.mobile.data.local.datastore.SettingsDataStore
 import com.hermes.mobile.data.remote.api.HermesApi
 import com.hermes.mobile.data.remote.websocket.HermesWebSocketClient
 import com.hermes.mobile.data.repositories.*
@@ -11,6 +12,7 @@ import dagger.Provides
 import dagger.Binds
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -31,12 +33,28 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(authDataStore: AuthDataStore): OkHttpClient {
+    fun provideOkHttpClient(
+        authDataStore: AuthDataStore,
+        settingsDataStore: SettingsDataStore
+    ): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
             // 只记录 BASIC 级别（方法/URL/状态码），不记录请求体/响应体，避免 token 泄露到 Logcat
             level = HttpLoggingInterceptor.Level.BASIC
         }
         return OkHttpClient.Builder()
+            // 动态主机拦截器：用用户配置的 backendHost 替换请求 URL 的 host
+            .addInterceptor(Interceptor { chain ->
+                val original = chain.request()
+                val configuredHost = try {
+                    kotlinx.coroutines.runBlocking { settingsDataStore.settings.first().backendHost }
+                } catch (_: Exception) { null }
+                val request = if (configuredHost != null && configuredHost.isNotBlank()) {
+                    val base = configuredHost.trimEnd('/')
+                    val newUrl = base + original.url.encodedPath + (if (original.url.encodedQuery != null) "?${original.url.encodedQuery}" else "")
+                    original.newBuilder().url(newUrl).build()
+                } else original
+                chain.proceed(request)
+            })
             .addInterceptor(Interceptor { chain ->
                 val original = chain.request()
                 val token = authDataStore.getToken()
