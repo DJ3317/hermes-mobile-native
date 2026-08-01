@@ -13,7 +13,7 @@ interface HermesApi {
     @POST("api/auth/login")
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
-    @GET("api/auth/ws-ticket")
+    @POST("api/auth/ws-ticket")
     suspend fun getWsTicket(): WsTicketResponse
 
     // Sessions

@@ -1,5 +1,6 @@
 package com.hermes.mobile.di
 
+import com.hermes.mobile.data.local.AppConfig
 import com.hermes.mobile.data.local.Logger
 import com.hermes.mobile.data.local.datastore.AuthDataStore
 import com.hermes.mobile.data.local.datastore.SettingsDataStore
@@ -35,20 +36,18 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(
         authDataStore: AuthDataStore,
-        settingsDataStore: SettingsDataStore
+        appConfig: AppConfig
     ): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply {
             // 只记录 BASIC 级别（方法/URL/状态码），不记录请求体/响应体，避免 token 泄露到 Logcat
             level = HttpLoggingInterceptor.Level.BASIC
         }
         return OkHttpClient.Builder()
-            // 动态主机拦截器：用用户配置的 backendHost 替换请求 URL 的 host
+            // 动态主机拦截器：用内存缓存的 backendHost 替换请求 URL 的 host（避免 runBlocking 死锁）
             .addInterceptor(Interceptor { chain ->
                 val original = chain.request()
-                val configuredHost = try {
-                    kotlinx.coroutines.runBlocking { settingsDataStore.settings.first().backendHost }
-                } catch (_: Exception) { null }
-                val request = if (configuredHost != null && configuredHost.isNotBlank()) {
+                val configuredHost = appConfig.backendHost
+                val request = if (configuredHost.isNotBlank()) {
                     val base = configuredHost.trimEnd('/')
                     val newUrl = base + original.url.encodedPath + (if (original.url.encodedQuery != null) "?${original.url.encodedQuery}" else "")
                     original.newBuilder().url(newUrl).build()

@@ -13,6 +13,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.hermes.mobile.data.local.AppConfig
 import com.hermes.mobile.data.local.Logger
 import com.hermes.mobile.data.local.datastore.AuthDataStore
 import com.hermes.mobile.data.local.datastore.SettingsDataStore
@@ -46,6 +47,7 @@ class SettingsViewModel @Inject constructor(
     private val settingsDataStore: SettingsDataStore,
     private val authDataStore: AuthDataStore,
     private val configRepository: ConfigRepository,
+    private val appConfig: AppConfig,
     private val logger: Logger
 ) : ViewModel() {
 
@@ -58,6 +60,8 @@ class SettingsViewModel @Inject constructor(
         val savedHost = authDataStore.getSavedHost()
         val savedUsername = authDataStore.getUsername()
         _uiState.update { it.copy(host = savedHost ?: "", username = savedUsername ?: "") }
+        // 同步 host 到内存缓存（拦截器使用）
+        if (!savedHost.isNullOrBlank()) appConfig.updateHost(savedHost)
     }
 
     /** 自动登录：使用已保存的凭证登录（App 启动时调用） */
@@ -92,6 +96,7 @@ class SettingsViewModel @Inject constructor(
             try {
                 logger.i("Connection", "测试连接: ${state.host}")
                 settingsDataStore.saveBackendHost(state.host.trim())
+                appConfig.updateHost(state.host.trim()) // 同步内存缓存
                 val status = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                     configRepository.getStatus()
                 }

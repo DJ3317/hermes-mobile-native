@@ -1,5 +1,6 @@
 package com.hermes.mobile.data.repositories
 
+import com.hermes.mobile.data.local.AppConfig
 import com.hermes.mobile.data.local.datastore.AuthDataStore
 import com.hermes.mobile.data.local.datastore.SettingsDataStore
 import com.hermes.mobile.data.mapper.*
@@ -20,22 +21,28 @@ class ChatRepositoryImpl @Inject constructor(
     private val api: HermesApi,
     private val wsClient: HermesWebSocketClient,
     private val authStore: AuthDataStore,
-    private val settingsDataStore: SettingsDataStore
+    private val appConfig: AppConfig
 ) : ChatRepository {
-    /** 确保 WebSocket 已连接（用配置的 host + ws-ticket 认证） */
+    /** 确保 WebSocket 已连接（URL 带 ticket/token 认证，hermes-agent 标准） */
     private fun ensureConnected(): Boolean {
         if (wsClient.isConnected()) return true
-        val host = try {
-            kotlinx.coroutines.runBlocking { settingsDataStore.settings.first().backendHost }
-        } catch (_: Exception) { "" }
+        val host = appConfig.backendHost
         if (host.isBlank()) return false
-        val wsUrl = host.replace("http://", "ws://").replace("https://", "wss://").trimEnd('/') + "/api/ws"
-        // 优先获取一次性 ws-ticket 作为 sub-protocol 认证（hermes-agent 标准）
-        var authToken: String? = authStore.getToken()
+        // 认证方式：ticket 或 token 作为 URL query 参数（web 端 buildHermesWebSocketUrl 相同方式）
+        val authToken: String? = authStore.getToken()
+        var authQuery = ""
         try {
             val ticket = kotlinx.coroutines.runBlocking { api.getWsTicket().ticket }
-            if (ticket.isNotBlank()) authToken = ticket
-        } catch (_: Exception) { /* ticket 失败则回退 token */ }
+            if (ticket.isNotBlank()) {
+                authQuery = "?ticket=$ticket"
+            }
+        } catch (_: Exception) {
+            // ticket 失败则回退 token query
+            if (!authToken.isNullOrBlank()) {
+                authQuery = "?token=${authToken.removePrefix("Basic ")}"
+            }
+        }
+        val wsUrl = host.replace("http://", "ws://").replace("https://", "wss://").trimEnd('/') + "/api/ws" + authQuery
         return wsClient.connect(wsUrl, authToken)
     }
 
@@ -247,7 +254,8 @@ class PreviewRepositoryImpl @Inject constructor(
 class ConfigRepositoryImpl @Inject constructor(
     private val api: HermesApi,
     private val authStore: AuthDataStore,
-    private val settingsDataStore: SettingsDataStore
+    private val settingsDataStore: SettingsDataStore,
+    private val appConfig: AppConfig
 ) : ConfigRepository {
     override suspend fun getConfig(): Map<String, String> = api.getConfig()
     override suspend fun saveConfig(key: String, value: String) { api.saveConfig(mapOf(key to value)) }
@@ -264,6 +272,7 @@ class ConfigRepositoryImpl @Inject constructor(
         // 读取用户配置的后端地址
         val host = try { settingsDataStore.settings.first().backendHost } catch (_: Exception) { "" }
         if (host.isBlank()) throw Exception("请先在设置中配置服务器地址")
+        appConfig.updateHost(host) // 同步到内存缓存（拦截器使用）
         var jsonError: String? = null
 
         // 方式1: JSON 登录
