@@ -38,10 +38,12 @@ class HermesWebSocketClient @Inject constructor() {
         if (connected) return true
 
         val requestBuilder = Request.Builder().url(url)
-        if (token != null) {
-            // hermes-agent 标准认证 header（REST 和 WebSocket 通用）
-            requestBuilder.addHeader("X-Hermes-Session-Token", token)
-            // 同时保留 Authorization Bearer 作为兼容回退
+        if (token != null && token.isNotBlank()) {
+            // hermes-agent WebSocket 认证：token 作为 sub-protocol 传递（Sec-WebSocket-Protocol header）
+            // 参考 RN 版本: new WebSocket(url, [token])
+            requestBuilder.header("Sec-WebSocket-Protocol", token)
+            // REST 风格 header 作为兼容回退
+            requestBuilder.header("X-Hermes-Session-Token", token)
             if (!token.startsWith("Basic ")) {
                 requestBuilder.addHeader("Authorization", "Bearer $token")
             } else {
