@@ -69,4 +69,33 @@ class AuthDataStore @Inject constructor(
     fun clearToken() {
         prefs.edit().remove("token").apply()
     }
+
+    // ── 记忆功能：加密保存登录凭证 ──
+
+    fun getUsername(): String? = prefs.getString("username", null)
+
+    fun getPassword(): String? = prefs.getString("password", null)
+
+    fun getSavedHost(): String? = prefs.getString("host", null)
+
+    fun hasSavedCredentials(): Boolean = getUsername() != null && getPassword() != null
+
+    /** 保存登录凭证（IP + 用户名 + 密码），全部加密存储 */
+    fun saveCredentials(host: String, username: String, password: String) {
+        prefs.edit()
+            .putString("host", host)
+            .putString("username", username)
+            .putString("password", password)
+            .apply()
+    }
+
+    /** 清除全部凭证 */
+    fun clearCredentials() {
+        prefs.edit()
+            .remove("host")
+            .remove("username")
+            .remove("password")
+            .remove("token")
+            .apply()
+    }
 }

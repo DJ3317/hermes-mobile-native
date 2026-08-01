@@ -43,6 +43,11 @@ class MainActivity : ComponentActivity() {
                     currentDestination?.hierarchy?.any { it.route == tab.route } == true
                 } || currentDestination?.route in bottomTabs.map { it.route }
 
+                // 启动时自动登录（如果已保存凭证）
+                val settingsViewModel: com.hermes.mobile.presentation.screens.settings.SettingsViewModel =
+                    androidx.hilt.navigation.compose.hiltViewModel()
+                LaunchedEffect(Unit) { settingsViewModel.autoLogin() }
+
                 val moreItems = listOf(
                     "sessions" to "会话记录" to Icons.Filled.List,
                     "artifacts" to "产物" to Icons.Filled.Inventory2,

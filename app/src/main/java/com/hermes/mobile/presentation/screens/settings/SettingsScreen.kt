@@ -52,6 +52,31 @@ class SettingsViewModel @Inject constructor(
 
     init {
         _uiState.update { it.copy(token = authDataStore.getToken()) }
+        // 加载已保存的凭证（记忆功能）
+        val savedHost = authDataStore.getSavedHost()
+        val savedUsername = authDataStore.getUsername()
+        _uiState.update { it.copy(host = savedHost ?: "", username = savedUsername ?: "") }
+    }
+
+    /** 自动登录：使用已保存的凭证登录（App 启动时调用） */
+    fun autoLogin() {
+        val username = authDataStore.getUsername() ?: return
+        val password = authDataStore.getPassword() ?: return
+        val host = authDataStore.getSavedHost() ?: return
+        if (username.isBlank() || password.isBlank() || host.isBlank()) return
+        _uiState.update { it.copy(host = host, username = username) }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoggingIn = true) }
+            try {
+                logger.i("Login", "自动登录: $username @ $host")
+                val token = loginUseCase(username, password)
+                _uiState.update { it.copy(token = token, isLoggingIn = false, error = null, isConnected = true) }
+                logger.i("Login", "自动登录成功")
+            } catch (e: Exception) {
+                logger.e("Login", "自动登录失败: ${e.message}", e)
+                _uiState.update { it.copy(isLoggingIn = false) }
+            }
+        }
     }
 
     fun setHost(host: String) { _uiState.update { it.copy(host = host) } }
@@ -71,12 +96,17 @@ class SettingsViewModel @Inject constructor(
     fun login() {
         val state = _uiState.value
         if (state.username.isBlank()) { _uiState.update { it.copy(error = "请输入用户名") }; return }
+        if (state.host.isBlank()) { _uiState.update { it.copy(error = "请输入服务器地址") }; return }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoggingIn = true) }
             try {
-                logger.i("Login", "尝试登录: ${state.username}")
+                // 保存 host 到设置（动态 host 拦截器使用）
+                settingsDataStore.saveBackendHost(state.host.trim())
+                logger.i("Login", "尝试登录: ${state.username} @ ${state.host}")
                 val token = loginUseCase(state.username, state.password)
-                _uiState.update { it.copy(token = token, isLoggingIn = false, error = null) }
+                // 记忆凭证（加密存储），下次自动登录
+                authDataStore.saveCredentials(state.host.trim(), state.username, state.password)
+                _uiState.update { it.copy(token = token, isLoggingIn = false, error = null, isConnected = true) }
                 logger.i("Login", "登录成功")
             } catch (e: Exception) {
                 val msg = e.message ?: "未知错误"
@@ -87,7 +117,11 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun logout() {
-        viewModelScope.launch { logoutUseCase(); _uiState.update { it.copy(token = null) } }
+        viewModelScope.launch {
+            logoutUseCase()
+            authDataStore.clearCredentials()
+            _uiState.update { it.copy(token = null, isConnected = false) }
+        }
     }
 
     fun clearError() { _uiState.update { it.copy(error = null) } }
