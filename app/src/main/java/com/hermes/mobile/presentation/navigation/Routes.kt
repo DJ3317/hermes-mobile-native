@@ -19,4 +19,5 @@ object Routes {
     const val REVIEW = "review"
     const val TERMINAL = "terminal"
     const val PREVIEW = "preview"
+    const val LOGS = "logs"
 }

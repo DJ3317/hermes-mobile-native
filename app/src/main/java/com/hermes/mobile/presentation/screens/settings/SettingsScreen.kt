@@ -204,6 +204,20 @@ fun SettingsScreen(
                     uiState.token?.let {
                         Text("已认证", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
                     }
+
+                    // 错误信息持久显示（不依赖 Snackbar）
+                    uiState.error?.let { err ->
+                        Surface(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            shape = MaterialTheme.shapes.medium,
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                        ) {
+                            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, modifier = Modifier.padding(12.dp)) {
+                                Text(err, color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                                TextButton(onClick = { viewModel.clearError() }) { Text("✕") }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -217,6 +231,8 @@ fun SettingsScreen(
                     SettingsNavItem("Profile 管理", "👤") { navController.navigate("profiles") }
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                     SettingsNavItem("对话记录", "📋") { navController.navigate("sessions") }
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                    SettingsNavItem("调试日志", "📝") { navController.navigate("logs") }
                 }
             }
 

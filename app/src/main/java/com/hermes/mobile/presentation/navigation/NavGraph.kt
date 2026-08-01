@@ -21,6 +21,7 @@ import com.hermes.mobile.presentation.screens.files.FilesScreen
 import com.hermes.mobile.presentation.screens.review.ReviewScreen
 import com.hermes.mobile.presentation.screens.terminal.TerminalScreen
 import com.hermes.mobile.presentation.screens.preview.PreviewScreen
+import com.hermes.mobile.presentation.screens.logs.LogsScreen
 
 @Composable
 fun HermesNavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -41,5 +42,6 @@ fun HermesNavGraph(navController: NavHostController, modifier: Modifier = Modifi
         composable(Routes.REVIEW) { ReviewScreen() }
         composable(Routes.TERMINAL) { TerminalScreen() }
         composable(Routes.PREVIEW) { PreviewScreen() }
+        composable(Routes.LOGS) { LogsScreen() }
     }
 }
