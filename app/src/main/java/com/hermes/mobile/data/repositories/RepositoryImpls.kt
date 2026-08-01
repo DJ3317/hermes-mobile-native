@@ -8,7 +8,10 @@ import com.hermes.mobile.data.remote.api.dto.*
 import com.hermes.mobile.data.remote.websocket.HermesWebSocketClient
 import com.hermes.mobile.domain.models.*
 import com.hermes.mobile.domain.repositories.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -158,7 +161,8 @@ class PreviewRepositoryImpl @Inject constructor() : PreviewRepository {
 @Singleton
 class ConfigRepositoryImpl @Inject constructor(
     private val api: HermesApi,
-    private val authStore: AuthDataStore
+    private val authStore: AuthDataStore,
+    private val settingsDataStore: SettingsDataStore
 ) : ConfigRepository {
     override suspend fun getConfig(): Map<String, String> = api.getConfig()
     override suspend fun saveConfig(key: String, value: String) { api.saveConfig(mapOf(key to value)) }
@@ -172,6 +176,10 @@ class ConfigRepositoryImpl @Inject constructor(
     override suspend fun toggleTool(name: String, enabled: Boolean) = Unit
 
     override suspend fun login(username: String, password: String): String {
+        // 读取用户配置的后端地址
+        val host = try { settingsDataStore.settings.first().backendHost } catch (_: Exception) { "http://192.168.31.250:9191" }
+        var jsonError: String? = null
+
         // 方式1: JSON 登录
         try {
             val response = api.login(LoginRequest(username, password))
@@ -179,25 +187,34 @@ class ConfigRepositoryImpl @Inject constructor(
                 authStore.saveToken(response.token)
                 return response.token
             }
-        } catch (_: Exception) { /* 失败后继续尝试 Basic Auth */ }
+        } catch (e: Exception) {
+            jsonError = e.message ?: "HTTP 登录失败"
+        }
 
-        // 方式2: HTTP Basic Auth — 使用 java.net.URL 避免 OkHttp 依赖
+        // 方式2: HTTP Basic Auth — 必须在 IO 线程执行网络调用
         val credentials = java.util.Base64.getEncoder().encodeToString("$username:$password".toByteArray())
-        val url = java.net.URL("http://192.168.31.250:9191/api/status")
-        val conn = url.openConnection() as java.net.HttpURLConnection
-        conn.setRequestProperty("Authorization", "Basic $credentials")
-        conn.connectTimeout = 10000
-        conn.readTimeout = 10000
-        return try {
-            val code = conn.responseCode
-            if (code in 200..299) {
-                authStore.saveToken("Basic $credentials")
-                "Basic $credentials"
-            } else {
-                throw Exception("HTTP $code")
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = java.net.URL("$host/api/status")
+                val conn = url.openConnection() as java.net.HttpURLConnection
+                conn.setRequestProperty("Authorization", "Basic $credentials")
+                conn.connectTimeout = 10000
+                conn.readTimeout = 10000
+                try {
+                    val code = conn.responseCode
+                    if (code in 200..299) {
+                        authStore.saveToken("Basic $credentials")
+                        "Basic $credentials"
+                    } else {
+                        throw Exception("HTTP $code${if (jsonError != null) " (JSON: $jsonError)" else ""}")
+                    }
+                } finally {
+                    conn.disconnect()
+                }
+            } catch (e: Exception) {
+                // 合并两个方式的错误信息，确保不为 null
+                throw Exception(e.message ?: jsonError ?: "连接失败")
             }
-        } finally {
-            conn.disconnect()
         }
     }
 
