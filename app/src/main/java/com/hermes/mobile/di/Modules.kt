@@ -52,7 +52,10 @@ object NetworkModule {
                     val base = configuredHost.trimEnd('/')
                     val newUrl = base + original.url.encodedPath + (if (original.url.encodedQuery != null) "?${original.url.encodedQuery}" else "")
                     original.newBuilder().url(newUrl).build()
-                } else original
+                } else {
+                    // 未配置服务器地址时直接抛出明确错误
+                    throw java.io.IOException("请先在设置中配置服务器地址")
+                }
                 chain.proceed(request)
             })
             .addInterceptor(Interceptor { chain ->
@@ -84,7 +87,8 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient, json: Json): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://192.168.31.250:9191/")
+            // 虚拟占位 baseUrl — 实际请求地址由动态 host 拦截器根据用户配置替换
+            .baseUrl("http://localhost/")
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaTypeOrNull()!!))
             .build()

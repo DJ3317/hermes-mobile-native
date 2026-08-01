@@ -29,7 +29,7 @@ class SettingsDataStore @Inject constructor(
         AppSettings(
             themeMode = prefs[Keys.THEME_MODE] ?: "system",
             language = prefs[Keys.LANGUAGE] ?: "zh",
-            backendHost = prefs[Keys.BACKEND_HOST] ?: "http://192.168.31.250:9191"
+            backendHost = prefs[Keys.BACKEND_HOST] ?: ""
         )
     }
 

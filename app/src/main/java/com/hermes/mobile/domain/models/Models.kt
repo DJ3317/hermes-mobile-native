@@ -226,7 +226,7 @@ data class PreviewContent(
 
 @Serializable
 data class BackendConfig(
-    val host: String = "http://192.168.31.250:9191",
+    val host: String = "",
     val token: String? = null
 )
 
@@ -255,7 +255,7 @@ data class SearchResult(
 data class AppSettings(
     val themeMode: String = "system",
     val language: String = "zh",
-    val backendHost: String = "http://192.168.31.250:9191",
+    val backendHost: String = "",
     val token: String? = null
 )
 

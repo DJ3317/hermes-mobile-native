@@ -27,7 +27,8 @@ class ChatRepositoryImpl @Inject constructor(
         if (wsClient.isConnected()) return true
         val host = try {
             kotlinx.coroutines.runBlocking { settingsDataStore.settings.first().backendHost }
-        } catch (_: Exception) { "http://192.168.31.250:9191" }
+        } catch (_: Exception) { "" }
+        if (host.isBlank()) return false
         val wsUrl = host.replace("http://", "ws://").replace("https://", "wss://").trimEnd('/') + "/api/ws"
         val token = authStore.getToken()
         return wsClient.connect(wsUrl, token)
@@ -195,7 +196,8 @@ class ConfigRepositoryImpl @Inject constructor(
 
     override suspend fun login(username: String, password: String): String {
         // 读取用户配置的后端地址
-        val host = try { settingsDataStore.settings.first().backendHost } catch (_: Exception) { "http://192.168.31.250:9191" }
+        val host = try { settingsDataStore.settings.first().backendHost } catch (_: Exception) { "" }
+        if (host.isBlank()) throw Exception("请先在设置中配置服务器地址")
         var jsonError: String? = null
 
         // 方式1: JSON 登录

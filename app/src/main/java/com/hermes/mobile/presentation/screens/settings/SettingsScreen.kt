@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SettingsUiState(
-    val host: String = "http://192.168.31.250:9191",
+    val host: String = "",
     val token: String? = null,
     val username: String = "",
     val password: String = "",
