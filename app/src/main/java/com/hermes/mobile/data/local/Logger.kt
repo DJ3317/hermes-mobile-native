@@ -10,7 +10,7 @@ enum class LogLevel { DEBUG, INFO, WARN, ERROR }
 
 /** 日志条目 */
 data class LogEntry(
-    val id: Long = System.currentTimeMillis(),
+    val id: Long = 0,
     val timestamp: Instant = Instant.now(),
     val level: LogLevel,
     val tag: String,
@@ -22,6 +22,7 @@ data class LogEntry(
 @Singleton
 class Logger @Inject constructor() {
     private val _logs = mutableListOf<LogEntry>()
+    private val idCounter = java.util.concurrent.atomic.AtomicLong(0)
     val logs: List<LogEntry> get() = _logs.toList()
 
     fun d(tag: String, msg: String) = add(LogLevel.DEBUG, tag, msg)
@@ -30,7 +31,10 @@ class Logger @Inject constructor() {
     fun e(tag: String, msg: String, t: Throwable? = null) = add(LogLevel.ERROR, tag, msg, t?.message)
 
     private fun add(level: LogLevel, tag: String, msg: String, throwable: String? = null) {
-        val entry = LogEntry(level = level, tag = tag, message = msg, throwable = throwable)
+        val entry = LogEntry(
+            id = idCounter.incrementAndGet(),
+            level = level, tag = tag, message = msg, throwable = throwable
+        )
         _logs.add(entry)
         if (_logs.size > 500) _logs.removeAt(0)
         when (level) {

@@ -237,11 +237,6 @@ fun SettingsScreen(
             }
 
             Spacer(Modifier.height(32.dp))
-
-            // Error
-            uiState.error?.let {
-                Snackbar(modifier = Modifier.padding(16.dp), action = { TextButton(onClick = { viewModel.clearError() }) { Text("关闭") } }) { Text(it) }
-            }
         }
     }
 }
