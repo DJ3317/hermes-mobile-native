@@ -98,4 +98,38 @@ interface HermesApi {
 
     @POST("api/agents/{id}/resume")
     suspend fun resumeAgent(@Path("id") id: String)
+
+    // Artifacts
+    @GET("api/artifacts")
+    suspend fun getArtifacts(): List<Map<String, @JvmSuppressWildcards Any>>
+
+    @DELETE("api/artifacts/{id}")
+    suspend fun deleteArtifact(@Path("id") id: String)
+
+    // Projects
+    @GET("api/projects")
+    suspend fun getProjects(): List<Map<String, @JvmSuppressWildcards Any>>
+
+    // Files
+    @GET("api/files")
+    suspend fun listFiles(@Query("path") path: String): List<Map<String, @JvmSuppressWildcards Any>>
+
+    @GET("api/files/content")
+    suspend fun getFileContent(@Query("path") path: String): String
+
+    // Review
+    @GET("api/reviews")
+    suspend fun getReviews(): List<Map<String, @JvmSuppressWildcards Any>>
+
+    // Terminal
+    @GET("api/terminal/sessions")
+    suspend fun getTerminalSessions(): List<Map<String, @JvmSuppressWildcards Any>>
+
+    // Starmap
+    @GET("api/starmap")
+    suspend fun getStarmap(): List<Map<String, @JvmSuppressWildcards Any>>
+
+    // Preview
+    @GET("api/preview")
+    suspend fun getPreview(@Query("url") url: String): Map<String, @JvmSuppressWildcards Any>
 }

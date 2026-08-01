@@ -116,9 +116,18 @@ class MessagingRepositoryImpl @Inject constructor(
 }
 
 @Singleton
-class ArtifactRepositoryImpl @Inject constructor() : ArtifactRepository {
-    override suspend fun getArtifacts(): List<Artifact> = emptyList()
-    override suspend fun deleteArtifact(id: String) = Unit
+class ArtifactRepositoryImpl @Inject constructor(
+    private val api: HermesApi
+) : ArtifactRepository {
+    override suspend fun getArtifacts(): List<Artifact> {
+        return try {
+            api.getArtifacts().mapNotNull { m ->
+                val id = m["id"] as? String ?: return@mapNotNull null
+                Artifact(id = id, name = (m["name"] as? String) ?: id, type = (m["type"] as? String) ?: "file")
+            }
+        } catch (_: Exception) { emptyList() }
+    }
+    override suspend fun deleteArtifact(id: String) { try { api.deleteArtifact(id) } catch (_: Exception) { } }
 }
 
 @Singleton
@@ -146,40 +155,92 @@ class AgentRepositoryImpl @Inject constructor(
 }
 
 @Singleton
-class StarmapRepositoryImpl @Inject constructor() : StarmapRepository {
-    override suspend fun getGraph(): List<StarmapNode> = emptyList()
+class StarmapRepositoryImpl @Inject constructor(
+    private val api: HermesApi
+) : StarmapRepository {
+    override suspend fun getGraph(): List<StarmapNode> {
+        return try {
+            api.getStarmap().mapNotNull { m ->
+                val id = m["id"] as? String ?: return@mapNotNull null
+                StarmapNode(id = id, label = (m["label"] as? String) ?: id, type = (m["type"] as? String) ?: "node")
+            }
+        } catch (_: Exception) { emptyList() }
+    }
 }
 
 @Singleton
-class ProjectRepositoryImpl @Inject constructor() : ProjectRepository {
-    override suspend fun getProjects(): List<Project> = emptyList()
+class ProjectRepositoryImpl @Inject constructor(
+    private val api: HermesApi
+) : ProjectRepository {
+    override suspend fun getProjects(): List<Project> {
+        return try {
+            api.getProjects().mapNotNull { m ->
+                val id = m["id"] as? String ?: return@mapNotNull null
+                Project(id = id, name = (m["name"] as? String) ?: id)
+            }
+        } catch (_: Exception) { emptyList() }
+    }
     override suspend fun getProjectFiles(projectId: String): List<FileEntry> = emptyList()
-    override suspend fun getFileContent(path: String): String = ""
+    override suspend fun getFileContent(path: String): String = try { api.getFileContent(path) } catch (_: Exception) { "" }
 }
 
 @Singleton
-class FileRepositoryImpl @Inject constructor() : FileRepository {
-    override suspend fun listFiles(path: String): List<FileEntry> = emptyList()
-    override suspend fun getFileContent(path: String): String = ""
+class FileRepositoryImpl @Inject constructor(
+    private val api: HermesApi
+) : FileRepository {
+    override suspend fun listFiles(path: String): List<FileEntry> {
+        return try {
+            api.listFiles(path).mapNotNull { m ->
+                val name = (m["name"] as? String) ?: return@mapNotNull null
+                FileEntry(name = name, path = (m["path"] as? String) ?: path, isDirectory = (m["is_directory"] as? Boolean) ?: false)
+            }
+        } catch (_: Exception) { emptyList() }
+    }
+    override suspend fun getFileContent(path: String): String = try { api.getFileContent(path) } catch (_: Exception) { "" }
 }
 
 @Singleton
-class ReviewRepositoryImpl @Inject constructor() : ReviewRepository {
-    override suspend fun getReviews(): List<CodeReview> = emptyList()
+class ReviewRepositoryImpl @Inject constructor(
+    private val api: HermesApi
+) : ReviewRepository {
+    override suspend fun getReviews(): List<CodeReview> {
+        return try {
+            api.getReviews().mapNotNull { m ->
+                val id = m["id"] as? String ?: return@mapNotNull null
+                CodeReview(id = id, title = (m["title"] as? String) ?: id, status = (m["status"] as? String) ?: "")
+            }
+        } catch (_: Exception) { emptyList() }
+    }
     override suspend fun getReviewDetail(id: String): CodeReview = CodeReview(id = id, title = "", status = "")
 }
 
 @Singleton
-class TerminalRepositoryImpl @Inject constructor() : TerminalRepository {
-    override suspend fun getSessions(): List<TerminalSession> = listOf(TerminalSession(id = "1"))
+class TerminalRepositoryImpl @Inject constructor(
+    private val api: HermesApi
+) : TerminalRepository {
+    override suspend fun getSessions(): List<TerminalSession> {
+        return try {
+            api.getTerminalSessions().mapNotNull { m ->
+                val id = m["id"] as? String ?: return@mapNotNull null
+                TerminalSession(id = id, name = (m["name"] as? String) ?: "Terminal")
+            }
+        } catch (_: Exception) { emptyList() }
+    }
     override fun connect(sessionId: String): Flow<String> = kotlinx.coroutines.flow.emptyFlow()
     override suspend fun sendInput(sessionId: String, input: String) = Unit
     override suspend fun disconnect(sessionId: String) = Unit
 }
 
 @Singleton
-class PreviewRepositoryImpl @Inject constructor() : PreviewRepository {
-    override suspend fun getPreview(url: String): PreviewContent = PreviewContent(url = url)
+class PreviewRepositoryImpl @Inject constructor(
+    private val api: HermesApi
+) : PreviewRepository {
+    override suspend fun getPreview(url: String): PreviewContent {
+        return try {
+            val m = api.getPreview(url)
+            PreviewContent(url = url, content = (m["content"] as? String) ?: (m["html"] as? String))
+        } catch (_: Exception) { PreviewContent(url = url) }
+    }
 }
 
 @Singleton
