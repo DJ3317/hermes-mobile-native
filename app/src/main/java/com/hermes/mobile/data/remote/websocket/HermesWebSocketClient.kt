@@ -39,7 +39,14 @@ class HermesWebSocketClient @Inject constructor() {
 
         val requestBuilder = Request.Builder().url(url)
         if (token != null) {
-            requestBuilder.addHeader("Authorization", "Bearer $token")
+            // hermes-agent 标准认证 header（REST 和 WebSocket 通用）
+            requestBuilder.addHeader("X-Hermes-Session-Token", token)
+            // 同时保留 Authorization Bearer 作为兼容回退
+            if (!token.startsWith("Basic ")) {
+                requestBuilder.addHeader("Authorization", "Bearer $token")
+            } else {
+                requestBuilder.addHeader("Authorization", token)
+            }
         }
 
         webSocket = client.newWebSocket(requestBuilder.build(), object : WebSocketListener() {

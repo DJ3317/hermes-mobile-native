@@ -59,7 +59,9 @@ object NetworkModule {
                 val original = chain.request()
                 val token = authDataStore.getToken()
                 val request = if (token != null) {
+                    // hermes-agent 标准认证 header + Authorization 兼容回退
                     original.newBuilder()
+                        .header("X-Hermes-Session-Token", token)
                         .header("Authorization", if (token.startsWith("Basic ")) token else "Bearer $token")
                         .build()
                 } else original
